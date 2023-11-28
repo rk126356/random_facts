@@ -31,10 +31,8 @@ class _GiveRatingScreenState extends State<GiveRatingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         backgroundColor: Colors.amber,
         title: const Text('Give Rating'),
-        elevation: 0, // Remove app bar shadow
       ),
       backgroundColor: Colors.grey[200], // Background color
       body: Center(

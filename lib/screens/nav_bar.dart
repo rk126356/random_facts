@@ -1,54 +1,67 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+import 'package:random_facts/common/colors.dart';
+import 'package:random_facts/providers/ad_provider.dart';
+import 'package:random_facts/providers/utils_provider.dart';
 import 'package:random_facts/screens/give_rating_screen.dart';
 import 'package:random_facts/screens/home_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:random_facts/screens/liked_facts_screen.dart';
+import 'package:random_facts/screens/remove_ads_screen.dart';
+import 'package:random_facts/screens/settings_screen.dart';
+import 'package:random_facts/utils/url_launcher.dart';
 
-class NavBar extends StatelessWidget {
+class NavBar extends StatefulWidget {
   const NavBar({super.key});
 
   @override
+  State<NavBar> createState() => _NavBarState();
+}
+
+class _NavBarState extends State<NavBar> {
+  String version = '1.0.0';
+
+  void checkVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    setState(() {
+      version = packageInfo.version;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkVersion();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final adProvider = Provider.of<AdProvider>(context, listen: false);
     return Drawer(
       child: ListView(
         // Remove padding
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: const Text('Random Facts'),
-            accountEmail: const Text('Version: 1.0.0'),
-            currentAccountPicture: CachedNetworkImage(
-              height: 90,
-              width: 90,
-              imageUrl:
-                  'https://static.zooniverse.org/www.zooniverse.org/assets/simple-avatar.png',
-              imageBuilder: (context, imageProvider) => Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: imageProvider,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-            ),
+            accountName:
+                Text(!adProvider.isPremium ? 'Real Facts' : 'Real Facts Pro'),
+            accountEmail: Text('Version: $version'),
+            currentAccountPicture: Image.asset('assets/images/logo.png'),
             decoration: const BoxDecoration(
-              color: Color(0xFF512DA8),
-              image: DecorationImage(
-                  fit: BoxFit.fill,
-                  image: AssetImage('assets/images/profile-bg3.jpg')),
+              color: AppColors.primaryColor,
             ),
           ),
           ListTile(
             leading: const Icon(
               Icons.home,
-              color: Color(0xFF512DA8),
+              color: AppColors.primaryColor,
             ),
             title: const Text('Home'),
             onTap: () {
-              Navigator.of(context).push(
+              Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => const HomeScreen(),
                 ),
@@ -58,32 +71,47 @@ class NavBar extends StatelessWidget {
           ListTile(
             leading: const Icon(
               Icons.favorite,
-              color: Color(0xFF512DA8),
+              color: AppColors.primaryColor,
             ),
             title: const Text('Liked Facts'),
-            onTap: () => Navigator.pushNamed(context, '/students'),
+            onTap: () {
+              final like = Provider.of<UtilsProvider>(context, listen: false);
+              like.loadLikedRandomFacts();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const LikedFactsScreen(),
+                ),
+              );
+            },
           ),
-          ListTile(
-            leading: const Icon(
-              Icons.hide_image_rounded,
-              color: Color(0xFF512DA8),
-            ),
-            title: const Text('Remove Ads'),
-            onTap: () => Navigator.pushNamed(context, '/payments'),
-          ),
+          if (!adProvider.isPremium)
+            ListTile(
+                leading: const Icon(
+                  Icons.hide_image_rounded,
+                  color: AppColors.primaryColor,
+                ),
+                title: const Text('Remove Ads'),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return const RemoveAdsScreen();
+                    },
+                  );
+                }),
           ListTile(
             leading: const Icon(
               Icons.help,
-              color: Color(0xFF512DA8),
+              color: AppColors.primaryColor,
             ),
             title: const Text('Help & Support'),
-            onTap: () => Navigator.pushNamed(context, '/upcoming-payments'),
+            onTap: () => open('https://raihansk.com/contact/'),
           ),
           const Divider(),
           ListTile(
             leading: const Icon(
               Icons.star,
-              color: Color(0xFF512DA8),
+              color: AppColors.primaryColor,
             ),
             title: const Text('Give Rating'),
             onTap: () {
@@ -98,12 +126,18 @@ class NavBar extends StatelessWidget {
           ListTile(
             leading: const Icon(
               Icons.settings,
-              color: Color(0xFF512DA8),
+              color: AppColors.primaryColor,
             ),
             title: const Text(
               'Settings',
             ),
-            onTap: () => Navigator.pushNamed(context, '/settings'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
           ),
           const Divider(),
 
@@ -112,9 +146,7 @@ class NavBar extends StatelessWidget {
             title: const Text('Exit'),
             leading: const Icon(Icons.logout),
             onTap: () async {
-              SharedPreferences preferences =
-                  await SharedPreferences.getInstance();
-              await preferences.clear();
+              SystemNavigator.pop();
             },
           ),
         ],

@@ -23,7 +23,9 @@ Future<List<Fact>> getLocalFacts(String name) async {
       List<dynamic> factsData = List<dynamic>.from(jsonDecode(factsJson));
       return factsData.map((data) => Fact.fromJson(data)).toList();
     } catch (e) {
-      print('Error parsing JSON: $e');
+      if (kDebugMode) {
+        print('Error parsing JSON: $e');
+      }
     }
   }
 
@@ -48,7 +50,9 @@ Future<List<RandomFact>> getLocalFactsRandom(String name) async {
       List<dynamic> factsData = List<dynamic>.from(jsonDecode(factsJson));
       return factsData.map((data) => RandomFact.fromJson(data)).toList();
     } catch (e) {
-      print('Error parsing JSON: $e');
+      if (kDebugMode) {
+        print('Error parsing JSON: $e');
+      }
     }
   }
 

@@ -2,10 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:random_facts/models/fact_model.dart';
+import 'package:random_facts/providers/ad_provider.dart';
+import 'package:random_facts/screens/remove_ads_screen.dart';
 import 'package:random_facts/utils/local_storage_facts.dart';
 import 'package:random_facts/widgets/banner_ad_widget.dart';
-import 'package:random_facts/widgets/native_ad_widget.dart';
 
 class InsideFactsScreen extends StatefulWidget {
   final String name;
@@ -103,6 +105,8 @@ class _InsideFactsScreenState extends State<InsideFactsScreen> {
     path = convertToSnakeCase(widget.name);
     fetchFacts();
     fetchNumber();
+    final adProvider = Provider.of<AdProvider>(context, listen: false);
+    adProvider.showInterstitialAd();
   }
 
   @override
@@ -117,6 +121,15 @@ class _InsideFactsScreenState extends State<InsideFactsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final adProvider = Provider.of<AdProvider>(context, listen: false);
+
+    if ((currentPage + 1) % 5 == 0) {
+      adProvider.showInterstitialAd();
+      if (kDebugMode) {
+        print('Showing ads');
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -126,22 +139,21 @@ class _InsideFactsScreenState extends State<InsideFactsScreen> {
         backgroundColor: widget.color,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.favorite_border,
+          if (!adProvider.isPremium)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton.icon(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return const RemoveAdsScreen();
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.hide_image),
+                  label: const Text('Remove Ads')),
             ),
-            onPressed: () {
-              // Add your favorite button logic here
-            },
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.share,
-            ),
-            onPressed: () {
-              // Add your favorite button logic here
-            },
-          ),
         ],
       ),
       body: _isLoading
@@ -189,6 +201,7 @@ class _InsideFactsScreenState extends State<InsideFactsScreen> {
   }
 
   Widget _buildFactCard(Fact fact) {
+    final adProvider = Provider.of<AdProvider>(context, listen: false);
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
@@ -213,7 +226,7 @@ class _InsideFactsScreenState extends State<InsideFactsScreen> {
           const SizedBox(
             height: 5,
           ),
-          const Center(child: BannerAdWidget()),
+          if (adProvider.shouldShowAd) const Center(child: BannerAdWidget()),
           // Fact Content
           Container(
             padding: const EdgeInsets.all(16.0),
@@ -247,7 +260,11 @@ class _InsideFactsScreenState extends State<InsideFactsScreen> {
                           ))
                       .toList(),
                 ),
-                Center(child: NativeAdWidget())
+                const SizedBox(
+                  height: 10,
+                ),
+                if (adProvider.shouldShowAd)
+                  const Center(child: BannerAdWidget())
               ],
             ),
           ),

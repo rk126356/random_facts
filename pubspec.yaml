@@ -1,7 +1,7 @@
 name: random_facts
 description: "A new Flutter project."
 publish_to: "none"
-version: 0.1.0
+version: 1.0.5+5
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -12,7 +12,6 @@ dependencies:
   firebase_core: ^2.23.0
   cloud_firestore: ^4.13.2
   shared_preferences: ^2.2.2
-  badges: ^3.1.2
   flutter_card_swiper: ^6.0.0
   cached_network_image: ^3.3.0
   flutter_rating_bar: ^4.0.1
@@ -20,6 +19,11 @@ dependencies:
   in_app_review: ^2.0.8
   provider: ^6.1.1
   google_mobile_ads: ^3.1.0
+  package_info_plus: ^5.0.1
+  cupertino_icons: ^1.0.2
+  onesignal_flutter: ^5.0.4
+  in_app_purchase: ^3.1.11
+  share_plus: ^7.2.1
 
 dev_dependencies:
   flutter_test:
@@ -28,3 +32,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/
