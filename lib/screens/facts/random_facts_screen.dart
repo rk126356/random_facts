@@ -24,7 +24,7 @@ class _RandomFactsScreenState extends State<RandomFactsScreen> {
   final String path = 'random_facts';
   List<RandomFact> facts = [];
   bool _isLoading = false;
-  int currentPage = 1;
+  int currentPage = 0;
 
   Future<void> fetchFacts() async {
     setState(() {
