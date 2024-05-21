@@ -40,25 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isloading = false;
 
-  void _loadAppOpenAd() {
-    AppOpenAd.load(
-      adUnitId: 'ca-app-pub-3442981380712673/1673450412',
-      request: const AdRequest(),
-      adLoadCallback: AppOpenAdLoadCallback(
-        onAdLoaded: (AppOpenAd ad) {
-          ad.show();
-          ad.dispose();
-        },
-        onAdFailedToLoad: (LoadAdError error) {
-          if (kDebugMode) {
-            print('AppOpenAd failed to load: $error');
-          }
-        },
-      ),
-      orientation: 1,
-    );
-  }
-
   void checkShouldShowAd() async {
     setState(() {
       _isloading = true;
@@ -76,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (appInfoData?['shouldShowAd'] && !isPremium) {
       adProvider.setShouldShowAd(true);
       adProvider.initializeInterstitialAd();
-      _loadAppOpenAd();
       if (kDebugMode) {
         print(appInfoData?['shouldShowAd']);
       }
